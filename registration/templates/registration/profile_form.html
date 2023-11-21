@@ -1,0 +1,37 @@
+{% extends 'tickets/base.html' %}
+
+{% block content %}
+<h2>My Profile</h2>
+<div class="d-flex">
+    <div class="me-4 col-md-8 pe-2">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{form.as_p}}
+            <input type="submit" class="btn btn-warning" value="Update">
+            <a href="{% url 'ticket_list' %}" class="btn btn-dark">Back</a>
+        </form>
+
+    </div>
+    <div class="card" style="width: 18rem;">
+        {% if request.user.tech.avatar %}
+        <img src="{{ request.user.tech.avatar.url }}" class="card-img-top" alt="...">
+        {% else %}
+        {% load static %}
+        <img src="{% static 'tickets/img/profile.webp' %}" class="card-img-top" alt="...">
+        {% endif %}
+        <div class="card-body">
+            <h5 class="card-title">{{ request.user.tech.name }} {{ request.user.tech.last_name }}</h5>
+            <p>Contact info:</p>
+            <p>Specialities:</p>
+            <li class="list-group-item">
+                <ol class="list-group list-group-numbered">
+                    <li class="list-group-item">A list item</li>
+                    <li class="list-group-item">A list item</li>
+                    <li class="list-group-item">A list item</li>
+                </ol>
+            </li>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

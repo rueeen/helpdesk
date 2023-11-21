@@ -1,0 +1,77 @@
+{% extends 'tickets/base.html' %} <!-- Hereda de la plantilla base 'tickets/base.html'. -->
+
+{% block content %} <!-- Inicio del bloque de contenido que se sobrescribirá en la plantilla base. -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<!-- Carga el CSS de DataTables, una librería de jQuery para tablas interactivas. -->
+
+<h2>Ticket List</h2> <!-- Título de la sección. -->
+<div class="d-flex flex-row-reverse my-2">
+    <!-- Contenedor para el botón de crear nuevo ticket, con estilos de flexbox. -->
+    <a class="btn btn-success" href="{% url 'ticket_create' %}">
+        <!-- Enlace para crear un nuevo ticket. -->
+        <i class="bi bi-plus-circle"></i>&nbsp;New Ticket
+    </a>
+</div>
+<table id="ticket-table" class="table table-striped">
+    <!-- Inicio de la tabla con el id 'ticket-table' y clases de Bootstrap para estilos. -->
+    {% if tickets %} <!-- Verifica si hay 'tickets' pasados al contexto de la plantilla. -->
+    <thead>
+        <!-- Encabezado de la tabla. -->
+        <tr>
+            <!-- Fila de encabezado con los títulos de las columnas. -->
+            <th>ID</th>
+            <th>Title</th>
+            <th>Created</th>
+            <th>Updated</th>
+            <th>Tech</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Cuerpo de la tabla donde se iterará sobre cada ticket. -->
+        {% for t in tickets %}
+        <!-- Bucle que recorre la lista de tickets. -->
+        <tr>
+            <!-- Fila de la tabla para un ticket. -->
+            <td>{{ t.id }}</td> <!-- Muestra el ID del ticket. -->
+            <td>{{ t.title }}</td> <!-- Muestra el título del ticket. -->
+            <td>{{ t.created_at }}</td> <!-- Muestra la fecha de creación del ticket. -->
+            <td>{{ t.updated_at }}</td> <!-- Muestra la fecha de la última actualización del ticket. -->
+            {% if t.tech %}
+            <!-- Verifica si el ticket tiene un técnico asociado. -->
+            <td>{{ t.tech }}</td>
+            <!-- Muestra el técnico asociado al ticket. -->
+            {% else %}
+            <td>No techs asociated</td>
+            <!-- Muestra un mensaje si no hay técnico asociado. -->
+            {% endif %}
+            <td>{{ t.status }}</td> <!-- Muestra el estado del ticket. -->
+            <td>
+                <!-- Columna para acciones, como ver detalles del ticket. -->
+                <a class="btn btn-info me-2" href="{% url 'ticket_detail' t.id %}">
+                    <!-- Botón para ir al detalle del ticket. -->
+                    <i class="bi bi-search"></i>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    {% else %}
+    <h3>No tickets in DB</h3> <!-- Mensaje mostrado si no hay tickets. -->
+    {% endif %}
+</table>
+
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<!-- Incluye jQuery, que es una dependencia de DataTables. -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<!-- Incluye el script de JavaScript de DataTables. -->
+<script>
+    $(document).ready(function () {
+        $('#ticket-table').DataTable();
+        //Inicializa DataTables en la tabla con id 'ticket-table'.
+    });
+</script>
+{% endblock %}
+<!-- Finaliza el bloque de contenido que se insertará en la plantilla base. -->

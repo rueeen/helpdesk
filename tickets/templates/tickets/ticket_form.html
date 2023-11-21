@@ -1,0 +1,49 @@
+{% extends 'tickets/base.html' %} <!-- Hereda de la plantilla base 'tickets/base.html'. -->
+
+{% block content %} <!-- Inicio del bloque de contenido que se sobrescribirá en la plantilla base. -->
+<form id="ticket-form" method="post"> <!-- Inicio formulario. -->
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-success" type="submit">Save</button><!-- Boton para ejecutar evento submit. -->
+    <a href="{% url 'ticket_list' %}" class="btn btn-dark">Back</a><!-- Boton para regresar a la tabla de tickets. -->
+</form>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script><!-- Libreria para añadir JQuery al proyecto. -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script><!-- Libreria para utilizar sweet alert. -->
+<script>
+    // Este script manejará el envío del formulario de manera asíncrona usando AJAX.
+    document.getElementById("ticket-form").addEventListener("submit", function (event) {
+        event.preventDefault(); // Evita que el formulario se envíe de la manera tradicional.
+
+        // Hace una petición AJAX al servidor enviando los datos del formulario serializados.
+        $.ajax({
+            url: "{% url 'ticket_create' %}", // URL a la que se enviará la petición.
+            type: "post", // Método HTTP a usar.
+            data: $(this).serialize(), // Serializa los datos del formulario para enviarlos.
+
+            success: function (data) { // Función a ejecutar si la petición es exitosa.
+                if (data.status === 'success') {
+                    // Si el servidor responde con éxito, muestra un mensaje con SweetAlert y redirecciona.
+                    Swal.fire({
+                        icon: 'success',
+                        title: data.message,
+                    }).then(function () {
+                        window.location.href = "{% url 'ticket_list' %}"; // Redirecciona a la lista de tickets.
+                    });
+                }
+            },
+
+            error: function (xhr, errmsg, err) { // Función a ejecutar si hay un error en la petición.
+                if (xhr.status === 400) { // Si el servidor responde con un error 400 (Bad Request).
+                    var errors = JSON.parse(xhr.responseText); // Parsea la respuesta para obtener los errores.
+                    Swal.fire({ // Muestra los errores utilizando SweetAlert.
+                        icon: 'error',
+                        title: errors.message,
+                    });
+                } 
+            }
+        });
+    });
+</script>
+
+{% endblock %}

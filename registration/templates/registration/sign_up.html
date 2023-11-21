@@ -1,0 +1,58 @@
+{% extends 'tickets/base.html' %}
+
+{% block content %}
+<h2 class="text-center">Creacion cuenta</h2>
+<div class="row mt-3 d-flex">
+    <form id="signup-form" method="post">
+        {% csrf_token %}
+        {{form.as_p}}
+        <p>
+            <input type="submit" class="btn btn-success" value="Create">
+        </p>
+    </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+<script>
+    // Handle form submission using AJAX
+    document.getElementById("signup-form").addEventListener("submit", function (event) {
+        event.preventDefault(); // Prevent regular form submission
+
+        // Perform AJAX form submission
+        $.ajax({
+            url: "{% url 'signup' %}",
+            type: "post",
+            data: $(this).serialize(),
+            success: function (data) {
+
+                if (data.status === 'success') {
+                    // Display SweetAlert upon success
+                    Swal.fire({
+                        icon: 'success',
+                        title: data.message,
+                    }).then(function () {
+                        // Redirect to the product list page
+                        window.location.href = "{% url 'login' %}";
+                    });
+                }
+
+
+            },
+            error: function (xhr, errmsg, err) {
+                // Aquí manejamos el 'error'
+                if (xhr.status === 400) { // BadRequest
+                    var errors = JSON.parse(xhr.responseText);
+                    Swal.fire({
+                        icon: 'error',
+                        title: errors.message,
+                    });
+                } 
+            }
+        });
+    });
+</script>
+
+{% endblock %}
+
+

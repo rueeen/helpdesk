@@ -1,0 +1,149 @@
+{% extends 'tickets/base.html' %}
+
+{% block content %}
+{% if ticket %}
+<div class="d-flex justify-content-between"> <!-- Cabecera para la vista -->
+    <div>
+        <h2>Detalle ticket {{ticket.id}}</h2>
+        <p>Tecnico: {{ticket.tech}}</p>
+    </div>
+    <div>
+        <div class="is-grouped">
+            <button id="close-ticket" class="btn btn-danger m-2">Close Ticket</button> <!-- Boton para cerrar ticket -->
+            <a href="#" class="btn btn-warning m-2">Reasignar Ticket</a> <!-- Boton para reasignar ticket EN PROCESO -->
+        </div>
+    </div>
+</div>
+
+<!-- Aqui comienza el detalle del ticket diseñado con columnas y filas -->
+<div class="row">
+    <p class="col bg-dark text-white m-2">
+        Titulo
+    </p>
+    <p class="col bg-dark text-white m-2">
+        Fecha creacion
+    </p>
+    <p class="col bg-dark text-white m-2">
+        Fecha actualizacion
+    </p>
+    <p class="col bg-dark text-white m-2">
+        Status
+    </p>
+</div>
+<div class="row">
+    <div class="col">
+        {{ticket.title}}
+    </div>
+    <div class="col">
+        {{ticket.created_at}}
+    </div>
+    <div class="col">
+        {{ticket.updated_at}}
+    </div>
+    <div class="col">
+        {{ticket.status}}
+    </div>
+</div>
+<div class="row">
+    <p class="col bg-dark text-white m-2">
+        Descripcion
+    </p>
+</div>
+<div class="row">
+    <div class="col">
+        {{ticket.description | linebreaks}}
+    </div>
+</div>
+<div class="row">
+    <p class="col bg-dark text-white m-2">
+        Historial
+    </p>
+</div>
+<div class="row p-2 mb-2">
+    {% if ticket.history.all %}
+    {% for h in ticket.history.all %}
+
+    <li>{{ h.created_at }} - {{ h.description }}</li>
+
+    {% endfor %}
+    {% else %}
+    <p>No hay historial para este ticket</p>
+    {% endif %}
+</div>
+
+
+<div class="is-grouped d-flex justify-content-end">
+
+    <!-- Button trigger modal -->
+    <button type="button" class="btn btn-primary m-2" data-bs-toggle="modal" data-bs-target="#exampleModal">
+        Agregar historial
+    </button>
+
+    <a href="{% url 'ticket_list' %}" class="btn btn-dark m-2">Back</a>
+</div>
+
+<!-- Modal de Bootstrap -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Historial Ticket</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button class="btn btn-success" type="submit">Agregar Historial</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.18/dist/sweetalert2.all.min.js"></script>
+<script>
+    // Se seleccionan el elemento del DOM con el ID 'close-ticket'.
+    document.querySelector("#close-ticket").addEventListener("click", function (event) {
+
+        // Se invoca la función Swal.fire de la librería SweetAlert2 para mostrar una alerta al usuario.
+        Swal.fire({
+            title: '¿Estás seguro?', // Título de la alerta.
+            text: 'Esta acción no se puede deshacer.', // Texto descriptivo de la alerta.
+            icon: 'warning', // Icono de advertencia.
+            showCancelButton: true, // Muestra un botón de cancelar para dar opción de no proceder.
+            confirmButtonColor: '#3085d6', // Color del botón de confirmar.
+            cancelButtonColor: '#d33', // Color del botón de cancelar.
+            confirmButtonText: 'Sí, cerrarlo!' // Texto del botón de confirmar.
+        }).then(function (result) {
+            // Después de que el usuario responde a la alerta, esta promesa se resuelve y se verifica la acción del usuario.
+            if (result.isConfirmed) {
+                // Si el usuario confirma, se realiza una petición AJAX al servidor.
+                $.ajax({
+                    url: "{% url 'status_update' ticket.id %}", // URL a la que se hace la petición, utilizando la sintaxis de Django para resolver URLs.
+                    type: "post", // Método HTTP POST para la petición.
+                    data: { csrfmiddlewaretoken: '{{ csrf_token }}' }, // Se envía el token CSRF para protección contra ataques de tipo CSRF.
+                    success: function (data) {
+                        // En caso de éxito de la petición AJAX, se muestra otra alerta indicando el éxito.
+                        Swal.fire({
+                            icon: 'success', // Icono de éxito.
+                            title: data.message, // Mensaje de éxito devuelto por el servidor.
+                        }).then(function () {
+                            // Después de cerrar la alerta de éxito, se redirige al usuario a la lista de tickets.
+                            window.location.href = "{% url 'ticket_list' %}";
+                        });
+                    },
+                    error: function (data) {
+                        // En caso de error en la petición AJAX, se podría manejar el error aquí.
+                        // Esta sección está vacía y se debería implementar la lógica de manejo de errores.
+                    }
+                });
+            }
+        });
+    });
+
+</script>
+
+{% endif %}
+{% endblock %}
